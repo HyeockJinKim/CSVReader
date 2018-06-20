@@ -26,11 +26,13 @@ import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
     @FXML
-    public TreeTableView csvTable;
+    public TreeTableView<CsvData> csvTable;
     @FXML
     public AnchorPane root;
     @FXML
     public Button loadCSVBtn;
+    @FXML
+    public Button saveCSVBtn;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -40,6 +42,7 @@ public class Controller implements Initializable {
 
     private void initHandler() {
         loadCSVBtn.setOnMouseClicked(e -> readCSV());
+        saveCSVBtn.setOnMouseClicked(e -> writeCSV());
     }
 
     private void initUI() {
@@ -49,6 +52,7 @@ public class Controller implements Initializable {
         csvTable.setShowRoot(false);
         csvTable.setLayoutX(5);
         csvTable.setLayoutY(35);
+
         Image csvImage = new Image(getClass().getResourceAsStream(Paths.get("image", "csv.png").toString()));
         ImageView csvImageView = new ImageView(csvImage);
         csvImageView.setFitWidth(15);
@@ -56,6 +60,14 @@ public class Controller implements Initializable {
         loadCSVBtn.setGraphic(csvImageView);
         loadCSVBtn.setLayoutX(5);
         loadCSVBtn.setLayoutY(5);
+
+        Image saveImage = new Image(getClass().getResourceAsStream(Paths.get("image", "save.png").toString()));
+        ImageView saveImageView = new ImageView(saveImage);
+        saveImageView.setFitWidth(15);
+        saveImageView.setFitHeight(15);
+        saveCSVBtn.setGraphic(saveImageView);
+        saveCSVBtn.setLayoutY(5);
+        saveCSVBtn.setLayoutX(45);
     }
 
     private void readCSV() {
@@ -71,16 +83,24 @@ public class Controller implements Initializable {
         }
     }
 
+    private void error(String errorMassage) {
+        try {
+            Stage errorStage = new Stage();
+            Parent errorPage = FXMLLoader.load(getClass().getResource("error.fxml"));
+            errorStage.setTitle(errorMassage);
+            errorStage.setScene(new Scene(errorPage, 200, 50));
+            errorStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void parseCSV(File file) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(file));
         String input = br.readLine();
         String[] values;
         if (input == null) {
-            Stage errorStage = new Stage();
-            Parent errorPage = FXMLLoader.load(getClass().getResource("error.fxml"));
-            errorStage.setTitle("CSV Can't Read!!");
-            errorStage.setScene(new Scene(errorPage, 200, 50));
-            errorStage.show();
+            error("CSV Can't Read!!");
             return ;
         }
         csvTable.getColumns().clear();
@@ -99,13 +119,37 @@ public class Controller implements Initializable {
             CsvData csv = new CsvData(values.length);
             for (int i = 0; i < values.length; ++i) {
                 csv.add(i, values[i]);
-                System.out.println(values[i]);
-                System.out.println(csv.getCsvData(i));
             }
             TreeItem<CsvData> treeItem = new TreeItem<>(csv);
             csvTable.getRoot().getChildren().addAll(treeItem);
         }
     }
 
+
+    private void writeCSV() {
+        String currentPath = Paths.get(".").toString();
+        JFileChooser jFileChooser = new JFileChooser();
+        jFileChooser.setCurrentDirectory(new File(currentPath));
+        jFileChooser.showSaveDialog(new JFrame());
+        File csvFile = jFileChooser.getSelectedFile();
+        if (csvFile == null) {
+            error("No file!!");
+            return ;
+        }
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile));
+            TreeItem<CsvData> rootItem = csvTable.getRoot();
+            for (int i = 0; i < csvTable.getColumns().size() - 1; ++i) {
+                bw.write(csvTable.getColumns().get(i).getText()+",");
+            }
+            bw.write(csvTable.getColumns().get(csvTable.getColumns().size() - 1).getText()+"\n");
+            for (TreeItem<CsvData> csv : rootItem.getChildren()) {
+                bw.write(csv.getValue().getCsvData());
+            }
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }

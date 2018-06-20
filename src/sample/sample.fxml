@@ -9,6 +9,7 @@
 
 <AnchorPane fx:id="root" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
    <Button fx:id="loadCSVBtn" />
+   <Button fx:id="saveCSVBtn" />
    <TreeTableView fx:id="csvTable">
    </TreeTableView>
 </AnchorPane>

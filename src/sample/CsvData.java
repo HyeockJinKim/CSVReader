@@ -21,4 +21,13 @@ public class CsvData {
     public StringProperty getCsvData(int index) {
         return csvData[index];
     }
+
+    public String getCsvData() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < csvData.length-1; i++) {
+            stringBuilder.append(csvData[i].get()).append(",");
+        }
+        stringBuilder.append(csvData[csvData.length-1].get()).append("\n");
+        return stringBuilder.toString();
+    }
 }
