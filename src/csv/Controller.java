@@ -1,9 +1,5 @@
-package sample;
+package csv;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -19,9 +15,6 @@ import javax.swing.*;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
@@ -33,6 +26,8 @@ public class Controller implements Initializable {
     public Button loadCSVBtn;
     @FXML
     public Button saveCSVBtn;
+    @FXML
+    public Button plusBtn;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -50,6 +45,7 @@ public class Controller implements Initializable {
         csvTable.prefWidthProperty().bind(root.widthProperty().subtract(10));
         csvTable.setRoot(new TreeItem<CsvData>());
         csvTable.setShowRoot(false);
+
         csvTable.setLayoutX(5);
         csvTable.setLayoutY(35);
 
@@ -68,6 +64,15 @@ public class Controller implements Initializable {
         saveCSVBtn.setGraphic(saveImageView);
         saveCSVBtn.setLayoutY(5);
         saveCSVBtn.setLayoutX(45);
+
+        Image plusImage = new Image(getClass().getResourceAsStream(Paths.get("image", "plus.png").toString()));
+        ImageView plusImageView = new ImageView(plusImage);
+        plusImageView.setFitWidth(15);
+        plusImageView.setFitHeight(15);
+        plusBtn.setGraphic(plusImageView);
+        plusBtn.setLayoutY(5);
+        plusBtn.setLayoutX(85);
+
     }
 
     private void readCSV() {
@@ -86,7 +91,7 @@ public class Controller implements Initializable {
     private void error(String errorMassage) {
         try {
             Stage errorStage = new Stage();
-            Parent errorPage = FXMLLoader.load(getClass().getResource("error.fxml"));
+            Parent errorPage = FXMLLoader.load(getClass().getResource("fxml/error.fxml"));
             errorStage.setTitle(errorMassage);
             errorStage.setScene(new Scene(errorPage, 200, 50));
             errorStage.show();
@@ -113,15 +118,25 @@ public class Controller implements Initializable {
             col.setCellValueFactory(x-> x.getValue().getValue().getCsvData(index));
             csvTable.getColumns().addAll(col);
         }
-
+        TreeItem<CsvData> lastItem = null;
         while ((input = br.readLine()) != null) {
             values = input.split(",");
             CsvData csv = new CsvData(values.length);
-            for (int i = 0; i < values.length; ++i) {
-                csv.add(i, values[i]);
+            if (!"".equals(values[0])) {
+                for (int i = 0; i < values.length; ++i) {
+                    csv.add(i, values[i]);
+                }
+
+                TreeItem<CsvData> treeItem = new TreeItem<>(csv);
+                csvTable.getRoot().getChildren().addAll(treeItem);
+                lastItem = treeItem;
+            } else {
+                for (int i = 1; i < values.length; ++i) {
+                    csv.add(i-1, values[i]);
+                }
+                TreeItem<CsvData> treeItem = new TreeItem<>(csv);
+                lastItem.getChildren().addAll(treeItem);
             }
-            TreeItem<CsvData> treeItem = new TreeItem<>(csv);
-            csvTable.getRoot().getChildren().addAll(treeItem);
         }
     }
 
