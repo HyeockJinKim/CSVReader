@@ -38,6 +38,7 @@ public class Controller implements Initializable {
     private void initHandler() {
         loadCSVBtn.setOnMouseClicked(e -> readCSV());
         saveCSVBtn.setOnMouseClicked(e -> writeCSV());
+        plusBtn.setOnMouseClicked(e -> addRow());
     }
 
     private void initUI() {
@@ -151,20 +152,30 @@ public class Controller implements Initializable {
             error("No file!!");
             return ;
         }
+
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile));
-            TreeItem<CsvData> rootItem = csvTable.getRoot();
             for (int i = 0; i < csvTable.getColumns().size() - 1; ++i) {
                 bw.write(csvTable.getColumns().get(i).getText()+",");
             }
             bw.write(csvTable.getColumns().get(csvTable.getColumns().size() - 1).getText()+"\n");
-            for (TreeItem<CsvData> csv : rootItem.getChildren()) {
-                bw.write(csv.getValue().getCsvData());
+
+            for (int i = 0; i < csvTable.getRoot().getChildren().size(); i++) {
+                for (int j = 0; j < csvTable.getColumns().size()-1; j++) {
+                    bw.write(csvTable.getColumns().get(j).getCellData(i).toString());
+                    bw.write(",");
+                }
+                bw.write(csvTable.getColumns().get(csvTable.getColumns().size()-1).getCellData(i).toString());
+                bw.write("\n");
             }
+
             bw.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    private void addRow() {
+
+    }
 }
